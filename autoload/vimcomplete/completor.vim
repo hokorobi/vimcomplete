@@ -355,6 +355,31 @@ export def Enable()
     endif
     setbufvar(bnr, '&completepopup', 'width:80,highlight:Pmenu,align:item')
 
+    augroup VimCompBufAutocmds | autocmd! * <buffer>
+        if options.alwaysOn
+            autocmd TextChangedI <buffer> VimComplete()
+            autocmd TextChangedP <buffer> VimCompletePopupVisible()
+        endif
+        autocmd BufEnter,BufReadPost,FileType <buffer> SetupCompletors()  # FileType, for 'ft' set in 'modeline'
+        autocmd CompleteDone <buffer> LRU_Cache()
+        if options.postfixClobber
+            autocmd CompleteDone <buffer> util.TextAction(true)
+            autocmd CompleteChanged <buffer> util.TextActionPre(true)
+            autocmd InsertLeave <buffer> util.UndoTextAction(true)
+        elseif options.postfixHighlight
+            autocmd CompleteChanged <buffer> util.TextActionPre()
+            autocmd CompleteDone,InsertLeave <buffer> util.UndoTextAction()
+        endif
+        if options.customInfoWindow
+            autocmd CompleteChanged <buffer> util.InfoPopupWindow()
+        endif
+    augroup END
+
+
+    if !get(g:, 'vimcomplete_do_mapping', 1)
+        return
+    endif
+
     util.CREnable()
 
     if options.alwaysOn
@@ -375,26 +400,6 @@ export def Enable()
         highlight default link VimCompletePostfix DiffChange
         inoremap <expr> <c-l> util.TextActionWrapper()
     endif
-
-    augroup VimCompBufAutocmds | autocmd! * <buffer>
-        if options.alwaysOn
-            autocmd TextChangedI <buffer> VimComplete()
-            autocmd TextChangedP <buffer> VimCompletePopupVisible()
-        endif
-        autocmd BufEnter,BufReadPost,FileType <buffer> SetupCompletors()  # FileType, for 'ft' set in 'modeline'
-        autocmd CompleteDone <buffer> LRU_Cache()
-        if options.postfixClobber
-            autocmd CompleteDone <buffer> util.TextAction(true)
-            autocmd CompleteChanged <buffer> util.TextActionPre(true)
-            autocmd InsertLeave <buffer> util.UndoTextAction(true)
-        elseif options.postfixHighlight
-            autocmd CompleteChanged <buffer> util.TextActionPre()
-            autocmd CompleteDone,InsertLeave <buffer> util.UndoTextAction()
-        endif
-        if options.customInfoWindow
-            autocmd CompleteChanged <buffer> util.InfoPopupWindow()
-        endif
-    augroup END
 
     util.TabEnable()
 enddef
