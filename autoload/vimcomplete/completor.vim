@@ -385,6 +385,12 @@ export def Enable()
         highlight default link VimCompletePostfix DiffChange
     endif
 
+    if options.postfixClobber
+      inoremap <silent><expr> <Plug>(vimcomplete-undo-text-action) util.UndoTextAction(true)
+    elseif options.postfixHighlight
+      inoremap <silent><expr> <Plug>(vimcomplete-undo-text-action) util.UndoTextAction()
+    endif
+
     if !get(g:, 'vimcomplete_do_mapping', 1)
         return
     endif
@@ -401,10 +407,8 @@ export def Enable()
     endif
 
     if options.postfixClobber
-        inoremap <silent><expr> <Plug>(vimcomplete-undo-text-action) util.UndoTextAction(true)
         inoremap <buffer> <c-c> <Plug>(vimcomplete-undo-text-action)<c-c>
     elseif options.postfixHighlight
-        inoremap <silent><expr> <Plug>(vimcomplete-undo-text-action) util.UndoTextAction()
         inoremap <buffer> <c-c> <Plug>(vimcomplete-undo-text-action)<c-c>
         inoremap <expr> <c-l> util.TextActionWrapper()
     endif
